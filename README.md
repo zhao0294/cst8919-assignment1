@@ -17,173 +17,102 @@ This project combines the Auth0 authentication from Lab 1 with Azure monitoring 
 
 ```
 flask-auth0-clean/
-├── server.py              # Main Flask application with enhanced logging
+├── server.py              # Main Flask application with Auth0 integration
 ├── requirements.txt       # Python dependencies
-├── .env                   # Environment variables (not in repo)
-├── test-app.http         # HTTP test requests
-├── templates/
+├── templates/            # HTML templates
 │   ├── home.html         # Home page template
 │   └── protected.html    # Protected page template
-└── README.md             # This file
+├── test-app.http         # REST Client test file for generating test data
+├── env.example           # Environment variables template
+└── README.md            # This file
 ```
-
-## Deployment Status
-
-✅ **Local Development**: Working on port 3000  
-✅ **Azure Deployment**: Successfully deployed and operational  
-✅ **Auth0 Integration**: Login and logout working correctly  
-✅ **HTTPS Enforcement**: Properly configured for Azure deployment  
-
-**Live Application**: https://cst8919-plan-amgwc3cpg9b5ascx.canadacentral-01.azurewebsites.net/
 
 ## Setup Instructions
 
-### 1. Auth0 Configuration
+### 1. Local Development Setup
 
-1. Go to [Auth0 Dashboard](https://manage.auth0.com/) and create a new "Regular Web Application"
-2. Configure the following settings:
-   - **Allowed Callback URLs**: 
-     ```
-     http://localhost:3000/callback
-     https://cst8919-plan-amgwc3cpg9b5ascx.canadacentral-01.azurewebsites.net/callback
-     ```
-   - **Allowed Logout URLs**: 
-     ```
-     http://localhost:3000
-     http://localhost:3000/
-     https://cst8919-plan-amgwc3cpg9b5ascx.canadacentral-01.azurewebsites.net
-     https://cst8919-plan-amgwc3cpg9b5ascx.canadacentral-01.azurewebsites.net/
-     ```
-3. Note down:
-   - Client ID
-   - Client Secret  
-   - Domain (e.g., your-tenant.auth0.com)
+1. **Clone the repository**:
+   ```bash
+   git clone <your-repo-url>
+   cd flask-auth0-clean
+   ```
 
-### 2. Local Development Setup
+2. **Create virtual environment**:
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
 
-1. Clone this repository:
-```bash
-git clone <your-repo-url>
-cd flask-auth0-clean
-```
+3. **Install dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-2. Create and activate virtual environment:
-```bash
-python3 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
+4. **Configure environment variables**:
+   ```bash
+   cp env.example .env
+   # Edit .env with your Auth0 credentials
+   ```
 
-3. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
+5. **Run the application**:
+   ```bash
+   python server.py
+   ```
+   The app will be available at `http://localhost:3000`
 
-4. Create `.env` file:
-```bash
-# Copy from .env.example and fill in your values
-AUTH0_CLIENT_ID=your_auth0_client_id
-AUTH0_CLIENT_SECRET=your_auth0_client_secret
-AUTH0_DOMAIN=your-tenant.auth0.com
-APP_SECRET_KEY=your_generated_secret_key
-PORT=3000
-```
+### 2. Auth0 Configuration
 
-Generate secret key:
-```bash
-openssl rand -hex 32
-```
+1. **Create Auth0 Application**:
+   - Go to [Auth0 Dashboard](https://manage.auth0.com/)
+   - Create a new "Regular Web Application"
+   - Configure callback URLs: `http://localhost:3000/callback`
+   - Configure logout URLs: `http://localhost:3000/`
 
-5. Run the application:
-```bash
-python server.py
-```
-
-6. Visit `http://localhost:3000` to test the application.
-
-**✅ Local deployment verified and working!**
+2. **Set environment variables**:
+   ```
+   AUTH0_DOMAIN=your-domain.auth0.com
+   AUTH0_CLIENT_ID=your-client-id
+   AUTH0_CLIENT_SECRET=your-client-secret
+   APP_SECRET_KEY=your-secret-key
+   ```
 
 ### 3. Azure Deployment
 
-1. **Create Azure Resources** (via Azure Portal or CLI):
-   - Resource Group: `cst8919-rg`
-   - App Service Plan: `cst8919-plan` (Free tier F1)
-   - Web App: `cst8919-plan` with Python 3.9 runtime
+1. **Create Azure Resources**:
+   ```bash
+   # Create resource group
+   az group create --name cst8919-rg --location canadacentral
+   
+   # Create app service plan
+   az appservice plan create --name cst8919-plan --resource-group cst8919-rg --sku B1
+   
+   # Create web app
+   az webapp create --name cst8919-plan --resource-group cst8919-rg --plan cst8919-plan --runtime "PYTHON:3.9"
+   ```
 
-2. **Configure Environment Variables** in Azure App Service:
-   - Add all variables from your `.env` file
-   - Ensure AUTH0 callback and logout URLs include Azure domain
+2. **Configure environment variables in Azure Portal**:
+   - Go to your Web App → Configuration → Application settings
+   - Add the same environment variables as local setup
+   - **Important**: Update Auth0 callback/logout URLs to include Azure URL
 
-3. **Enable Diagnostic Settings**:
-   - Go to Azure Portal > App Service > Monitoring > Diagnostic settings
-   - Enable **AppServiceConsoleLogs**
-   - Send to **Log Analytics workspace**
+3. **Deploy to Azure**:
+   ```bash
+   # Package application
+   zip -r app.zip . -x "venv/*" "*.pyc" "__pycache__/*" ".env" ".git/*"
+   
+   # Deploy
+   az webapp deployment source config-zip --resource-group cst8919-rg --name cst8919-plan --src app.zip
+   ```
 
-4. **Deploy Application**:
-```bash
-# Package application
-zip -r app.zip . -x "venv/*" "*.pyc" "__pycache__/*" ".env" ".git/*"
+4. **Update Auth0 URLs for Azure**:
+   - **Allowed Callback URLs**: Add `https://your-app-name.azurewebsites.net/callback`
+   - **Allowed Logout URLs**: Add `https://your-app-name.azurewebsites.net/`
 
-# Deploy to Azure
-az webapp deployment source config-zip --resource-group cst8919-rg --name cst8919-plan --src app.zip
-```
+## Security Monitoring & Alerting
 
-**✅ Azure deployment verified and working!**
+### KQL Query for Threat Detection
 
-## Key Implementation Details
-
-### HTTPS Enforcement for Azure
-The application automatically detects Azure deployment and enforces HTTPS URLs for Auth0 callbacks and logout redirects:
-
-```python
-# Login route with HTTPS enforcement
-if 'azurewebsites.net' in request.host:
-    callback_url = url_for("callback", _external=True, _scheme='https')
-
-# Logout route with exact URL matching
-if 'azurewebsites.net' in request.host:
-    return_to = "https://cst8919-plan-amgwc3cpg9b5ascx.canadacentral-01.azurewebsites.net"
-```
-
-### Auth0 URL Configuration
-Critical for successful logout functionality:
-- **Allowed Logout URLs** must include both with and without trailing slash
-- **Allowed Callback URLs** must use HTTPS for Azure deployment
-- Exact URL matching is required by Auth0
-
-## Logging Architecture
-
-### Structured Logging Format
-The application logs user activities in JSON format for easy parsing by Azure Monitor:
-
-```json
-{
-  "timestamp": "2025-01-04T12:34:56.789Z",
-  "activity_type": "protected_route_access",
-  "client_ip": "192.168.1.100",
-  "user_agent": "Mozilla/5.0...",
-  "user_id": "auth0|507f1f77bcf86cd799439011",
-  "email": "user@example.com",
-  "name": "John Doe",
-  "details": {
-    "route": "/protected"
-  }
-}
-```
-
-### Activity Types Tracked
-- `login_initiated`: User starts login process
-- `login_successful`: Successful Auth0 authentication
-- `login_failed`: Failed authentication attempt
-- `logout`: User logs out
-- `home_page_access`: Home page visit
-- `protected_route_access`: Access to protected resources
-- `unauthorized_access_attempt`: Blocked access attempt
-
-## Threat Detection & Monitoring
-
-### KQL Query for Excessive Access Detection
-
-This query identifies users who access the `/protected` route more than 10 times in 15 minutes:
+The following KQL query detects users who access the `/protected` route more than 10 times in 15 minutes:
 
 ```kql
 AppServiceConsoleLogs
@@ -201,164 +130,95 @@ AppServiceConsoleLogs
 | order by AccessCount desc
 ```
 
-### Advanced Security Analysis Queries
+### Azure Alert Configuration
 
-1. **Failed Login Attempts**:
-```kql
-AppServiceConsoleLogs
-| where TimeGenerated > ago(1h)
-| where ResultDescription contains "login_failed"
-| extend LogData = parse_json(substring(ResultDescription, indexof(ResultDescription, "{")))
-| summarize FailedAttempts = count() by 
-    client_ip = tostring(LogData.client_ip),
-    bin(TimeGenerated, 5m)
-| where FailedAttempts > 3
-| order by FailedAttempts desc
+1. **Create Action Group**:
+   - Name: `cst8919-security-alerts`
+   - Add email action with your email address
+
+2. **Create Alert Rule**:
+   - **Signal type**: Log
+   - **Query**: Use the KQL query above
+   - **Threshold**: 0 (triggers when any results are found)
+   - **Evaluation frequency**: 5 minutes
+   - **Time window**: 15 minutes
+   - **Severity**: 3 (Low)
+   - **Action group**: Select the created action group
+
+### Testing the Alert
+
+1. **Generate test data**:
+   - Use `test-app.http` with VSCode REST Client
+   - Or manually access `/protected` 15+ times in quick succession
+   - Or use browser console: `for(let i=0; i<15; i++) { fetch('/protected'); }`
+
+2. **Verify alert trigger**:
+   - Check email for alert notification
+   - Verify in Azure Portal → Alerts
+
+## Logging Structure
+
+The application logs user activities in structured JSON format:
+
+```json
+{
+  "timestamp": "2025-07-02T10:30:00.000Z",
+  "activity_type": "protected_route_access",
+  "user_id": "auth0|123456789",
+  "email": "user@example.com",
+  "name": "John Doe",
+  "client_ip": "192.168.1.1",
+  "user_agent": "Mozilla/5.0...",
+  "details": {
+    "route": "/protected"
+  }
+}
 ```
-
-2. **Unauthorized Access Patterns**:
-```kql
-AppServiceConsoleLogs
-| where TimeGenerated > ago(30m)
-| where ResultDescription contains "unauthorized_access_attempt"
-| extend LogData = parse_json(substring(ResultDescription, indexof(ResultDescription, "{")))
-| summarize UnauthorizedAttempts = count() by 
-    client_ip = tostring(LogData.client_ip),
-    user_agent = tostring(LogData.user_agent)
-| order by UnauthorizedAttempts desc
-```
-
-## Azure Alert Configuration
-
-### Alert Rule Setup
-
-1. **Navigate to Azure Monitor** > Alerts > Create Alert Rule
-
-2. **Scope**: Select your Log Analytics workspace
-
-3. **Condition**:
-   - Signal type: Custom log search
-   - Search query: Use the excessive access KQL query above
-   - Alert logic:
-     - Based on: Number of results
-     - Operator: Greater than
-     - Threshold: 0
-     - Evaluation frequency: Every 5 minutes
-
-4. **Actions**: Configure email notifications or webhook actions
 
 ## Testing
 
-### Local Testing
-```bash
-# Test login flow
-curl -X GET http://localhost:3000/login
+### Using VSCode REST Client
 
-# Test protected route (should redirect to login)
-curl -X GET http://localhost:3000/protected
+1. Install "REST Client" extension
+2. Open `test-app.http`
+3. Update `@baseUrl` variable for your environment
+4. Click "Send Request" buttons to test endpoints
 
-# Test health endpoint
-curl -X GET http://localhost:3000/health
-```
+### Manual Testing
 
-### Azure Testing
-```bash
-# Test health endpoint
-curl -X GET https://cst8919-plan-amgwc3cpg9b5ascx.canadacentral-01.azurewebsites.net/health
-
-# Test login flow
-curl -X GET https://cst8919-plan-amgwc3cpg9b5ascx.canadacentral-01.azurewebsites.net/login
-```
+1. **Local testing**: `http://localhost:3000`
+2. **Azure testing**: `https://your-app-name.azurewebsites.net`
+3. **Test flow**: Login → Access protected page → Logout
 
 ## Troubleshooting
 
 ### Common Issues
 
-1. **Auth0 Callback URL Mismatch**:
-   - Ensure Allowed Callback URLs include both local and Azure URLs
-   - Use HTTPS for Azure deployment URLs
+1. **Auth0 callback URL mismatch**:
+   - Ensure callback URLs in Auth0 match exactly (including protocol)
+   - For Azure: Use HTTPS URLs
 
-2. **Logout Not Working**:
-   - Verify Allowed Logout URLs include both with and without trailing slash
-   - Check that the exact URL is being generated by the application
-
-3. **Module Not Found Errors**:
+2. **Module not found errors**:
    - Ensure `requirements.txt` is included in deployment package
-   - Verify all dependencies are listed in requirements.txt
+   - Check Azure Web App runtime version
 
-4. **Environment Variables**:
-   - Check Azure App Service Configuration settings
-   - Verify all required Auth0 variables are set
+3. **Logout redirect issues**:
+   - Verify logout URLs in Auth0 configuration
+   - Check for trailing slashes
+
+### Log Analysis
+
+- **View logs**: Azure Portal → Web App → Log stream
+- **Query logs**: Log Analytics workspace → Logs
+- **Monitor alerts**: Azure Portal → Alerts
 
 ## Security Considerations
 
-- Environment variables are stored securely in Azure App Service Configuration
-- Sensitive files (.env) are excluded from Git repository
-- HTTPS is enforced for all Azure deployments
-- Structured logging provides audit trail for security monitoring
-- Auth0 handles secure token management and user authentication
+- Environment variables are not committed to Git
+- Sensitive data is stored in Azure Key Vault (recommended for production)
+- HTTPS is enforced on Azure deployment
+- Session data is minimized to reduce cookie size
+- All user activities are logged for security monitoring
 
-## Future Enhancements
-
-- Implement rate limiting for login attempts
-- Add multi-factor authentication support
-- Enhanced threat detection with machine learning
-- Real-time security dashboard
-- Automated incident response workflows
-
-## Demo Video
-
-[YouTube Demo Link](your-youtube-link-here)
-
-### Demo Content:
-- Live Auth0 login/logout flow
-- Azure deployment walkthrough
-- Log generation and monitoring
-- KQL query execution in Azure Monitor
-- Alert configuration and testing
-- Security scenarios demonstration
-
-## What I Learned
-
-- **Integration Complexity**: Combining Auth0, Flask, and Azure monitoring requires careful configuration
-- **Structured Logging**: JSON format logs enable powerful querying and analysis
-- **Real-time Monitoring**: Azure Monitor provides near real-time threat detection capabilities
-- **DevSecOps Practices**: Security monitoring should be built into the application from the start
-
-## Future Improvements
-
-- **Machine Learning**: Use Azure ML for anomaly detection
-- **Geographic Analysis**: Track login locations for suspicious patterns
-- **Advanced Correlation**: Cross-reference multiple log sources
-- **Automated Response**: Implement automatic user blocking for suspicious activity
-- **Dashboard**: Create Azure Dashboard for security metrics visualization
-
-## Troubleshooting
-
-### Common Issues
-
-1. **Auth0 Callback Error**:
-   - Verify callback URLs in Auth0 dashboard
-   - Check environment variables
-
-2. **Azure Logs Not Appearing**:
-   - Ensure AppServiceConsoleLogs is enabled
-   - Check Log Analytics workspace connection
-   - Wait 5-10 minutes for log ingestion
-
-3. **Alert Not Triggering**:
-   - Verify KQL query returns results
-   - Check alert rule configuration
-   - Ensure action group is properly configured
-
-## Repository
-
-- **GitHub**: [Your Repository URL]
-- **Live Demo**: [Azure App Service URL]
-- **Video Demo**: [YouTube URL]
-
----
-
-**Submission Date**: [Your Submission Date]
-**Course**: CST8919
-**Assignment**: Assignment 1 
+## Links
+- **YouTube Demo**:[Watch on YouTube](https://youtu.be/CqnQ2tUOOEw)
