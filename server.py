@@ -64,7 +64,13 @@ def home():
 @app.route("/login")
 def login():
     log_user_activity("login_initiated")
-    return oauth.auth0.authorize_redirect(redirect_uri=url_for("callback", _external=True))
+    # Force HTTPS for Azure deployment
+    if 'azurewebsites.net' in request.host:
+        callback_url = url_for("callback", _external=True, _scheme='https')
+    else:
+        callback_url = url_for("callback", _external=True)
+    app.logger.info(f"Login initiated with callback URL: {callback_url}")
+    return oauth.auth0.authorize_redirect(redirect_uri=callback_url)
 
 @app.route("/callback")
 def callback():
@@ -117,7 +123,13 @@ def logout():
     if os.getenv('FLASK_ENV') == 'development' or 'localhost' in request.host or '3000' in request.host:
         return redirect(url_for('home'))
     else:
-        return redirect(f"https://{AUTH0_DOMAIN}/v2/logout?returnTo={url_for('home', _external=True)}")
+        # Use the exact base URL that matches Auth0 Allowed Logout URLs
+        base_url = "https://cst8919-plan-amgwc3cpg9b5ascx.canadacentral-01.azurewebsites.net"
+        
+        app.logger.info(f"Logout initiated with base URL: {base_url}")
+        logout_url = f"https://{AUTH0_DOMAIN}/v2/logout?returnTo={base_url}"
+        app.logger.info(f"Full logout URL: {logout_url}")
+        return redirect(logout_url)
 
 @app.route("/protected")
 def protected():

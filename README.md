@@ -11,6 +11,7 @@ This project combines the Auth0 authentication from Lab 1 with Azure monitoring 
 - **Activity Monitoring**: Tracks user logins, protected route access, and unauthorized attempts
 - **Threat Detection**: KQL queries to identify suspicious access patterns
 - **Azure Alerts**: Automated notifications for security incidents
+- **Production Deployment**: Successfully deployed to Azure App Service
 
 ## Project Structure
 
@@ -26,14 +27,33 @@ flask-auth0-clean/
 └── README.md             # This file
 ```
 
+## Deployment Status
+
+✅ **Local Development**: Working on port 3000  
+✅ **Azure Deployment**: Successfully deployed and operational  
+✅ **Auth0 Integration**: Login and logout working correctly  
+✅ **HTTPS Enforcement**: Properly configured for Azure deployment  
+
+**Live Application**: https://cst8919-plan-amgwc3cpg9b5ascx.canadacentral-01.azurewebsites.net/
+
 ## Setup Instructions
 
 ### 1. Auth0 Configuration
 
 1. Go to [Auth0 Dashboard](https://manage.auth0.com/) and create a new "Regular Web Application"
 2. Configure the following settings:
-   - **Allowed Callback URLs**: `http://localhost:3000/callback`, `https://your-app-name.azurewebsites.net/callback`
-   - **Allowed Logout URLs**: `http://localhost:3000`, `https://your-app-name.azurewebsites.net`
+   - **Allowed Callback URLs**: 
+     ```
+     http://localhost:3000/callback
+     https://cst8919-plan-amgwc3cpg9b5ascx.canadacentral-01.azurewebsites.net/callback
+     ```
+   - **Allowed Logout URLs**: 
+     ```
+     http://localhost:3000
+     http://localhost:3000/
+     https://cst8919-plan-amgwc3cpg9b5ascx.canadacentral-01.azurewebsites.net
+     https://cst8919-plan-amgwc3cpg9b5ascx.canadacentral-01.azurewebsites.net/
+     ```
 3. Note down:
    - Client ID
    - Client Secret  
@@ -73,30 +93,25 @@ Generate secret key:
 openssl rand -hex 32
 ```
 
-5. **Configure Auth0** (Important for logout functionality):
-   - Go to Auth0 Dashboard > Applications > Your App
-   - Add to **Allowed Logout URLs**: `http://localhost:3000`, `http://localhost:3000/`
-   - Add to **Allowed Callback URLs**: `http://localhost:3000/callback`
-
-6. Run the application:
+5. Run the application:
 ```bash
 python server.py
 ```
 
-7. Visit `http://localhost:3000` to test the application.
+6. Visit `http://localhost:3000` to test the application.
 
 **✅ Local deployment verified and working!**
 
 ### 3. Azure Deployment
 
 1. **Create Azure Resources** (via Azure Portal or CLI):
-   - Resource Group
-   - App Service Plan (Free tier F1)
-   - Web App with Python 3.9 runtime
+   - Resource Group: `cst8919-rg`
+   - App Service Plan: `cst8919-plan` (Free tier F1)
+   - Web App: `cst8919-plan` with Python 3.9 runtime
 
 2. **Configure Environment Variables** in Azure App Service:
    - Add all variables from your `.env` file
-   - Update AUTH0 callback URLs to include Azure domain
+   - Ensure AUTH0 callback and logout URLs include Azure domain
 
 3. **Enable Diagnostic Settings**:
    - Go to Azure Portal > App Service > Monitoring > Diagnostic settings
@@ -104,8 +119,36 @@ python server.py
    - Send to **Log Analytics workspace**
 
 4. **Deploy Application**:
-   - Use Azure CLI: `az webapp deployment source config-zip`
-   - Or use Azure Portal > Deployment Center
+```bash
+# Package application
+zip -r app.zip . -x "venv/*" "*.pyc" "__pycache__/*" ".env" ".git/*"
+
+# Deploy to Azure
+az webapp deployment source config-zip --resource-group cst8919-rg --name cst8919-plan --src app.zip
+```
+
+**✅ Azure deployment verified and working!**
+
+## Key Implementation Details
+
+### HTTPS Enforcement for Azure
+The application automatically detects Azure deployment and enforces HTTPS URLs for Auth0 callbacks and logout redirects:
+
+```python
+# Login route with HTTPS enforcement
+if 'azurewebsites.net' in request.host:
+    callback_url = url_for("callback", _external=True, _scheme='https')
+
+# Logout route with exact URL matching
+if 'azurewebsites.net' in request.host:
+    return_to = "https://cst8919-plan-amgwc3cpg9b5ascx.canadacentral-01.azurewebsites.net"
+```
+
+### Auth0 URL Configuration
+Critical for successful logout functionality:
+- **Allowed Logout URLs** must include both with and without trailing slash
+- **Allowed Callback URLs** must use HTTPS for Azure deployment
+- Exact URL matching is required by Auth0
 
 ## Logging Architecture
 
@@ -199,69 +242,69 @@ AppServiceConsoleLogs
    - Alert logic:
      - Based on: Number of results
      - Operator: Greater than
-     - Threshold value: 0
-     - Evaluated based on:
-       - Period: 15 minutes
-       - Frequency: 5 minutes
+     - Threshold: 0
+     - Evaluation frequency: Every 5 minutes
 
-4. **Action Group**:
-   - Create new action group
-   - Add email notification action
-   - Notification type: Email/SMS/Push/Voice
+4. **Actions**: Configure email notifications or webhook actions
 
-5. **Alert Details**:
-   - Severity: 3 (Low)
-   - Alert rule name: "Excessive Protected Route Access"
-   - Description: "User accessing protected route more than 10 times in 15 minutes"
+## Testing
 
-### Testing Alert System
+### Local Testing
+```bash
+# Test login flow
+curl -X GET http://localhost:3000/login
 
-1. **Authenticate** through Auth0 login
-2. **Access** `/protected` route multiple times rapidly (>10 times in 15 minutes)
-3. **Monitor** Alert should trigger within 5-15 minutes
-4. **Verify** Email notification received
+# Test protected route (should redirect to login)
+curl -X GET http://localhost:3000/protected
 
-## Testing & Simulation
+# Test health endpoint
+curl -X GET http://localhost:3000/health
+```
 
-### Using test-app.http
+### Azure Testing
+```bash
+# Test health endpoint
+curl -X GET https://cst8919-plan-amgwc3cpg9b5ascx.canadacentral-01.azurewebsites.net/health
 
-The included `test-app.http` file contains various test scenarios:
+# Test login flow
+curl -X GET https://cst8919-plan-amgwc3cpg9b5ascx.canadacentral-01.azurewebsites.net/login
+```
 
-1. **Basic functionality tests**:
-   - Home page access
-   - Health check
-   - Login flow initiation
+## Troubleshooting
 
-2. **Security testing**:
-   - Unauthorized access attempts
-   - Multiple protected route accesses
+### Common Issues
 
-3. **Update baseUrl** in the file for your deployment:
-   - Local: `@baseUrl = http://localhost:3000`
-   - Azure: `@baseUrl = https://your-app-name.azurewebsites.net`
+1. **Auth0 Callback URL Mismatch**:
+   - Ensure Allowed Callback URLs include both local and Azure URLs
+   - Use HTTPS for Azure deployment URLs
 
-### Manual Testing Steps
+2. **Logout Not Working**:
+   - Verify Allowed Logout URLs include both with and without trailing slash
+   - Check that the exact URL is being generated by the application
 
-1. **Test normal user flow**:
-   - Visit home page
-   - Click login
-   - Complete Auth0 authentication
-   - Access protected page
-   - Logout
+3. **Module Not Found Errors**:
+   - Ensure `requirements.txt` is included in deployment package
+   - Verify all dependencies are listed in requirements.txt
 
-2. **Test security scenarios**:
-   - Try accessing `/protected` without authentication
-   - Login and access `/protected` 15+ times quickly
-   - Check Azure Monitor logs
-   - Verify alert triggers
+4. **Environment Variables**:
+   - Check Azure App Service Configuration settings
+   - Verify all required Auth0 variables are set
 
 ## Security Considerations
 
-- **Environment Variables**: Never commit `.env` files with secrets
-- **HTTPS**: Use HTTPS in production (Azure provides this automatically)
-- **Session Security**: Flask sessions are signed with secret key
-- **Rate Limiting**: Consider implementing rate limiting for production
-- **IP Allowlisting**: Consider restricting access by IP for admin functions
+- Environment variables are stored securely in Azure App Service Configuration
+- Sensitive files (.env) are excluded from Git repository
+- HTTPS is enforced for all Azure deployments
+- Structured logging provides audit trail for security monitoring
+- Auth0 handles secure token management and user authentication
+
+## Future Enhancements
+
+- Implement rate limiting for login attempts
+- Add multi-factor authentication support
+- Enhanced threat detection with machine learning
+- Real-time security dashboard
+- Automated incident response workflows
 
 ## Demo Video
 

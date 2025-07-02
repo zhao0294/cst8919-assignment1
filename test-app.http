@@ -101,6 +101,11 @@ Accept: text/html
 
 ###
 
+GET {{baseUrl}}/protected
+Accept: text/html
+
+###
+
 ### Test logout
 GET {{baseUrl}}/logout
 Accept: text/html
@@ -109,4 +114,4 @@ Accept: text/html
 
 # Variables (update these for your deployment)
 @baseUrl = http://localhost:3000
-# For Azure deployment: @baseUrl = https://your-app-name.azurewebsites.net 
+# For Azure deployment (WORKING): @baseUrl = https://cst8919-plan-amgwc3cpg9b5ascx.canadacentral-01.azurewebsites.net 
