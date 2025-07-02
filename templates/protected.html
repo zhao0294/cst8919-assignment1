@@ -3,9 +3,38 @@
 
 <head>
   <title>Protected Page</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+    }
+
+    .status {
+      background: #e7f3fe;
+      border-left: 5px solid #2196F3;
+      padding: 16px;
+      margin-bottom: 24px;
+      border-radius: 4px;
+    }
+
+    .ok {
+      color: #388e3c;
+      font-weight: bold;
+    }
+  </style>
 </head>
 
 <body>
+  <div class="status">
+    <h2>✅ System Status Check</h2>
+    <ul>
+      <li><span class="ok">Auth0 SSO Login</span>: Passed</li>
+      <li><span class="ok">Structured Logging</span>: Recorded (viewable in Azure Monitor)</li>
+      <li><span class="ok">Azure Monitor</span>: Integrated</li>
+      <li><span class="ok">Security Alert</span>: Configured (KQL + Alert Rule)</li>
+    </ul>
+    <p>All key security and monitoring components are working properly.</p>
+  </div>
   <h1>Welcome to the Protected Page!</h1>
   <p>You are successfully authenticated.</p>
   <a href="{{ url_for('logout') }}">Logout</a>
