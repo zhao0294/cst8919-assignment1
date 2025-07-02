@@ -1,6 +1,10 @@
 ### Assignment 1: Security Monitoring Test Suite
 ### This file helps generate test data for KQL analysis and Azure Alert testing
 
+### Environment Variables
+@baseUrl = https://cst8919-plan-amgwc3cpg9b5ascx.canadacentral-01.azurewebsites.net
+@localUrl = http://localhost:3000
+
 ### Test home page access
 GET {{baseUrl}}/
 Accept: text/html
@@ -158,6 +162,37 @@ Accept: text/html
 
 ###
 
-# Variables (update these for your deployment)
-@baseUrl = http://localhost:3000
-# For Azure deployment (WORKING): @baseUrl = https://cst8919-plan-amgwc3cpg9b5ascx.canadacentral-01.azurewebsites.net 
+### ========================================
+### LOCAL DEVELOPMENT TESTING
+### Uncomment the lines below to test locally
+### ========================================
+
+# ### Local home page access
+# GET {{localUrl}}/
+# Accept: text/html
+
+# ###
+
+# ### Local health check
+# GET {{localUrl}}/health
+# Accept: application/json
+
+# ###
+
+# ### Local login
+# GET {{localUrl}}/login
+# Accept: text/html
+
+# ###
+
+# ### Local protected route
+# GET {{localUrl}}/protected
+# Accept: text/html
+
+# ###
+
+# ### Local logout
+# GET {{localUrl}}/logout
+# Accept: text/html
+
+# ###
