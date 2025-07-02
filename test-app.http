@@ -1,0 +1,112 @@
+### Test home page access
+GET {{baseUrl}}/
+Accept: text/html
+
+###
+
+### Test health check endpoint
+GET {{baseUrl}}/health
+Accept: application/json
+
+###
+
+### Test login initiation
+GET {{baseUrl}}/login
+Accept: text/html
+
+###
+
+### Test protected route access (without authentication - should redirect)
+GET {{baseUrl}}/protected
+Accept: text/html
+
+###
+
+### Test multiple protected route accesses (after authentication)
+### Note: These requests need to be made after successful Auth0 login in browser
+### Use these to simulate excessive access pattern for alert testing
+
+GET {{baseUrl}}/protected
+Accept: text/html
+
+###
+
+GET {{baseUrl}}/protected
+Accept: text/html
+
+###
+
+GET {{baseUrl}}/protected
+Accept: text/html
+
+###
+
+GET {{baseUrl}}/protected
+Accept: text/html
+
+###
+
+GET {{baseUrl}}/protected
+Accept: text/html
+
+###
+
+GET {{baseUrl}}/protected
+Accept: text/html
+
+###
+
+GET {{baseUrl}}/protected
+Accept: text/html
+
+###
+
+GET {{baseUrl}}/protected
+Accept: text/html
+
+###
+
+GET {{baseUrl}}/protected
+Accept: text/html
+
+###
+
+GET {{baseUrl}}/protected
+Accept: text/html
+
+###
+
+GET {{baseUrl}}/protected
+Accept: text/html
+
+###
+
+GET {{baseUrl}}/protected
+Accept: text/html
+
+###
+
+GET {{baseUrl}}/protected
+Accept: text/html
+
+###
+
+GET {{baseUrl}}/protected
+Accept: text/html
+
+###
+
+GET {{baseUrl}}/protected
+Accept: text/html
+
+###
+
+### Test logout
+GET {{baseUrl}}/logout
+Accept: text/html
+
+###
+
+# Variables (update these for your deployment)
+@baseUrl = http://localhost:3000
+# For Azure deployment: @baseUrl = https://your-app-name.azurewebsites.net 

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Protected Page - Flask Auth0 App</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+    }
+
+    h1,
+    h2 {
+      color: #333;
+    }
+
+    a {
+      color: #007bff;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .user-info {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 5px;
+      margin: 20px 0;
+    }
+
+    .protected-content {
+      background: #d4edda;
+      padding: 20px;
+      border-radius: 5px;
+      margin: 20px 0;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>🔒 Protected Page</h1>
+
+  <div class="user-info">
+    <h2>User Information</h2>
+    <p><strong>Email:</strong> {{ user.email }}</p>
+    <p><strong>Name:</strong> {{ user.name }}</p>
+    <p><strong>User ID:</strong> {{ user.sub }}</p>
+  </div>
+
+  <div class="protected-content">
+    <h3>🎉 Success!</h3>
+    <p>You have successfully accessed the protected area!</p>
+    <p>This page demonstrates:</p>
+    <ul>
+      <li>✅ Auth0 authentication working</li>
+      <li>✅ Session management active</li>
+      <li>✅ Structured logging recording your access</li>
+      <li>✅ Protected route security</li>
+    </ul>
+  </div>
+
+  <p>
+    <a href="/">← Back to Home</a> |
+    <a href="/logout">Logout</a> |
+    <a href="/health">Health Check</a>
+  </p>
+</body>
+
+</html>

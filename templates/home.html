@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Home - Flask Auth0 App</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    a {
+      color: #007bff;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+
+<body>
+  {% if user and user.userinfo %}
+  <h1>Dashboard</h1>
+  <p>Hello, {{ user.userinfo.email }}!</p>
+  <p>Welcome to the secure Flask app with Auth0!</p>
+  <p><a href="/protected">Go to Protected Page</a> | <a href="/logout">Logout</a></p>
+  {% else %}
+  <h1>Welcome to Flask Auth0 App</h1>
+  <p>This is a secure web application with Auth0 authentication and Azure monitoring.</p>
+  <p><a href="/login">Login with Auth0</a></p>
+  {% endif %}
+</body>
+
+</html>
