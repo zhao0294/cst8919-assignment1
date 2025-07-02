@@ -1,3 +1,6 @@
+### Assignment 1: Security Monitoring Test Suite
+### This file helps generate test data for KQL analysis and Azure Alert testing
+
 ### Test home page access
 GET {{baseUrl}}/
 Accept: text/html
@@ -22,85 +25,128 @@ Accept: text/html
 
 ###
 
-### Test multiple protected route accesses (after authentication)
-### Note: These requests need to be made after successful Auth0 login in browser
-### Use these to simulate excessive access pattern for alert testing
+### ========================================
+### EXCESSIVE ACCESS TESTING (for Alert Trigger)
+### These requests simulate a user accessing /protected multiple times
+### Run these after successful Auth0 login to trigger the alert
+### (User accessing /protected more than 10 times in 15 minutes)
+### ========================================
 
+### Access 1
 GET {{baseUrl}}/protected
 Accept: text/html
 
 ###
 
+### Access 2
 GET {{baseUrl}}/protected
 Accept: text/html
 
 ###
 
+### Access 3
 GET {{baseUrl}}/protected
 Accept: text/html
 
 ###
 
+### Access 4
 GET {{baseUrl}}/protected
 Accept: text/html
 
 ###
 
+### Access 5
 GET {{baseUrl}}/protected
 Accept: text/html
 
 ###
 
+### Access 6
 GET {{baseUrl}}/protected
 Accept: text/html
 
 ###
 
+### Access 7
 GET {{baseUrl}}/protected
 Accept: text/html
 
 ###
 
+### Access 8
 GET {{baseUrl}}/protected
 Accept: text/html
 
 ###
 
+### Access 9
 GET {{baseUrl}}/protected
 Accept: text/html
 
 ###
 
+### Access 10
 GET {{baseUrl}}/protected
 Accept: text/html
 
 ###
 
+### Access 11 (This should trigger the alert!)
 GET {{baseUrl}}/protected
 Accept: text/html
 
 ###
 
+### Access 12
 GET {{baseUrl}}/protected
 Accept: text/html
 
 ###
 
+### Access 13
 GET {{baseUrl}}/protected
 Accept: text/html
 
 ###
 
+### Access 14
 GET {{baseUrl}}/protected
 Accept: text/html
 
 ###
 
+### Access 15
 GET {{baseUrl}}/protected
 Accept: text/html
 
 ###
 
+### Access 16
+GET {{baseUrl}}/protected
+Accept: text/html
+
+###
+
+### Access 17
+GET {{baseUrl}}/protected
+Accept: text/html
+
+###
+
+### Access 18
+GET {{baseUrl}}/protected
+Accept: text/html
+
+###
+
+### Access 19
+GET {{baseUrl}}/protected
+Accept: text/html
+
+###
+
+### Access 20
 GET {{baseUrl}}/protected
 Accept: text/html
 
