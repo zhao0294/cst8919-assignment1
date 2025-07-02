@@ -73,12 +73,19 @@ Generate secret key:
 openssl rand -hex 32
 ```
 
-5. Run the application:
+5. **Configure Auth0** (Important for logout functionality):
+   - Go to Auth0 Dashboard > Applications > Your App
+   - Add to **Allowed Logout URLs**: `http://localhost:3000`, `http://localhost:3000/`
+   - Add to **Allowed Callback URLs**: `http://localhost:3000/callback`
+
+6. Run the application:
 ```bash
 python server.py
 ```
 
-Visit `http://localhost:3000` to test the application.
+7. Visit `http://localhost:3000` to test the application.
+
+**✅ Local deployment verified and working!**
 
 ### 3. Azure Deployment
 

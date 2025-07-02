@@ -112,7 +112,12 @@ def logout():
                      user_info=user_info)
     
     session.clear()
-    return redirect(f"https://{AUTH0_DOMAIN}/v2/logout?returnTo={url_for('home', _external=True)}")
+    # For local development, redirect directly to home
+    # For production, use Auth0 logout
+    if os.getenv('FLASK_ENV') == 'development' or 'localhost' in request.host or '3000' in request.host:
+        return redirect(url_for('home'))
+    else:
+        return redirect(f"https://{AUTH0_DOMAIN}/v2/logout?returnTo={url_for('home', _external=True)}")
 
 @app.route("/protected")
 def protected():
